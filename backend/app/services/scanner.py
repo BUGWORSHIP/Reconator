@@ -23,7 +23,7 @@ def _now() -> datetime:
 
 def _run_module(spec: ModuleSpec, url: str, cwd: str) -> tuple[ModuleStatus, str, str]:
     cmd = spec.command.format(url=shlex.quote(url))
-    log.info("module_start", extra={"module": spec.name, "url": url})
+    log.info("module_start", extra={"module_name": spec.name, "url": url}) 
     try:
         proc = subprocess.run(
             cmd,
