@@ -1,7 +1,6 @@
 services:
   db:
     image: postgres:16-alpine
-    container_name: reconator-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-reconator}
@@ -10,7 +9,9 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-reconator}"]
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${POSTGRES_USER:-reconator}
       interval: 5s
       timeout: 5s
       retries: 10
@@ -19,7 +20,6 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    container_name: reconator-api
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-reconator}:${POSTGRES_PASSWORD:-reconator}@db:5432/${POSTGRES_DB:-reconator}
@@ -32,8 +32,6 @@ services:
       RATE_LIMIT_WRITES: ${RATE_LIMIT_WRITES:-20/minute}
       RATE_LIMIT_BULK: ${RATE_LIMIT_BULK:-5/minute}
       CORS_ORIGINS: "*"
-    ports:
-      - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -44,9 +42,11 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    container_name: reconator-worker
     restart: unless-stopped
-    command: ["python", "-m", "app.worker"]
+    command:
+      - python
+      - -m
+      - app.worker
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-reconator}:${POSTGRES_PASSWORD:-reconator}@db:5432/${POSTGRES_DB:-reconator}
       TELEGRAM_API_KEY: ${TELEGRAM_API_KEY:-}
@@ -67,10 +67,7 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
-    container_name: reconator-web
     restart: unless-stopped
-    ports:
-      - "3000:80"
     depends_on:
       - api
 
